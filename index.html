@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>تحليل الأعداد – شجري (جوال)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        body {
+            font-family: 'Cairo', 'Segoe UI', sans-serif;
+            background: #f0f4f8;
+            height: 100dvh;
+            overflow: hidden;
+            touch-action: none;
+        }
+        .app {
+            display: flex;
+            flex-direction: column;
+            height: 100dvh;
+            max-width: 500px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 6px 8px 8px;
+            position: relative;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #e2e8f0;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .header h1 { font-size: 16px; color: #1e293b; }
+        .header .sub { color: #64748b; font-size: 11px; }
+        .controls { display: flex; gap: 4px; align-items: center; }
+        .controls button {
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: 700;
+            border: none;
+            border-radius: 6px;
+            background: #3b82f6;
+            color: white;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        .controls button:active { transform: scale(0.92); }
+        .controls .btn-reset { background: #94a3b8; }
+
+        .input-row {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            padding: 4px 0;
+            flex-shrink: 0;
+            flex-wrap: wrap;
+        }
+        .input-row input {
+            width: 70px;
+            padding: 6px 4px;
+            font-size: 16px;
+            font-weight: 700;
+            text-align: center;
+            border: 2px solid #cbd5e1;
+            border-radius: 10px;
+            outline: none;
+            background: white;
+            font-family: 'Cairo', sans-serif;
+        }
+        .input-row input:focus { border-color: #3b82f6; }
+        .input-row button {
+            padding: 6px 12px;
+            background: #3b82f6;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        .input-row button:active { background: #2563eb; }
+
+        #canvasWrapper {
+            flex: 1;
+            min-height: 0;
+            margin-top: 4px;
+            border-radius: 12px;
+            background: #fafcff;
+            background-image: linear-gradient(#e8eef7 1px, transparent 1px),
+                              linear-gradient(90deg, #e8eef7 1px, transparent 1px);
+            background-size: 24px 24px;
+            box-shadow: inset 0 0 0 1px #e2e8f0;
+            overflow: hidden;
+            position: relative;
+            touch-action: none;
+            cursor: grab;
+            display: flex;
+            flex-direction: column;
+        }
+        #canvasWrapper.panning { cursor: grabbing; }
+
+        #treeContainer {
+            flex: 1;
+            width: 100%;
+            position: relative;
+            touch-action: none;
+            overflow: visible;
+            min-height: 150px;
+        }
+        #treeContainer svg {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            touch-action: none;
+            transform-origin: 0 0;
+            pointer-events: none;
+        }
+        #treeContainer svg .clickable {
+            pointer-events: all;
+            cursor: pointer;
+        }
+        .placeholder {
+            color: #94a3b8;
+            font-size: 15px;
+            text-align: center;
+            padding: 30px 10px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #summaryBox {
+            flex-shrink: 0;
+            margin: 6px 10px 4px 10px;
+            padding: 6px 12px;
+            border: 2px solid #10b981;
+            border-radius: 10px;
+            background: rgba(236, 253, 245, 0.85);
+            backdrop-filter: blur(4px);
+            text-align: center;
+            font-size: 16px;
+            font-weight: 800;
+            color: #065f46;
+            direction: rtl;
+            min-height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
+        }
+        #summaryBox.hidden {
+            opacity: 0;
+            transform: scale(0.95);
+            min-height: 0;
+            padding: 0 12px;
+            border-color: transparent;
+            background: transparent;
+            box-shadow: none;
+        }
+        #summaryBox .summary-label { color: #047857; font-size: 14px; }
+        #summaryBox .summary-result { color: #0f172a; font-size: 18px; }
+        #summaryBox .summary-arrow { color: #94a3b8; font-size: 18px; }
+
+        .zoom-bar {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            flex-shrink: 0;
+            padding: 2px 0;
+        }
+        .zoom-bar button {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            border: none;
+            background: #e2e8f0;
+            font-size: 16px;
+            font-weight: 800;
+            color: #1e293b;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        .zoom-bar button:active { background: #cbd5e1; transform: scale(0.92); }
+        .zoom-label { font-size: 11px; color: #64748b; min-width: 32px; text-align: center; font-weight: 700; }
+
+        /* لوحة الأرقام خالية تماماً من أي نصوص مزعجة وتعمل بسلاسة */
+        .numpad-overlay {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.1);
+            backdrop-filter: blur(2px);
+            display: none;
+            justify-content: center;
+            align-items: flex-end;
+            padding: 4px 4px 12px 4px;
+            z-index: 100;
+            animation: fadeUp 0.15s ease;
+        }
+        .numpad-overlay.active { display: flex; }
+        .numpad-panel {
+            background: rgba(243, 244, 246, 0.98);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 6px;
+            width: 100%;
+            max-width: 270px;
+            box-shadow: 0 -10px 25px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            border: 1px solid rgba(255,255,255,0.4);
+        }
+        .numpad-display {
+            background: #ffffff;
+            border-radius: 6px;
+            padding: 4px 6px;
+            font-size: 16px;
+            font-weight: 900;
+            text-align: center;
+            color: #0f172a;
+            border: 1px solid #cbd5e1;
+            min-height: 30px;
+            font-family: 'Cairo', sans-serif;
+            direction: rtl;
+        }
+        .numpad-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+        }
+        .numpad-grid button {
+            padding: 6px 0;
+            font-size: 17px;
+            font-weight: 700;
+            border: none;
+            border-radius: 6px;
+            background: #ffffff;
+            color: #0f172a;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            touch-action: manipulation;
+            cursor: pointer;
+            transition: all 0.05s ease;
+            font-family: 'Cairo', sans-serif;
+            min-height: 36px;
+            border: 1px solid rgba(226,232,240,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .numpad-grid button:active {
+            background: #cbd5e1;
+            transform: scale(0.94);
+        }
+        .numpad-grid .num-btn {
+            background: #ffffff;
+            color: #0f172a;
+        }
+        .numpad-grid .clear-btn {
+            background: #fee2e2;
+            color: #dc2626;
+            border-color: #fecaca;
+            font-size: 15px;
+        }
+        .numpad-grid .done-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tooltip {
+            position: absolute;
+            background: #dc2626;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 20;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            white-space: nowrap;
+            direction: rtl;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .tooltip.show { opacity: 1; }
+    </style>
+</head>
+<body>
+<div class="app">
+    <div class="header">
+        <div style="display:flex; align-items:center; gap:4px;">
+            <h1>🌳 تحليل شجري</h1>
+            <span class="sub">(جوال)</span>
+        </div>
+        <div class="controls">
+            <button class="btn-reset" id="resetBtn">↻ إعادة</button>
+        </div>
+    </div>
+
+    <div class="input-row">
+        <input type="number" id="rootNumberInput" placeholder="العدد" min="2" step="1" inputmode="numeric">
+        <button id="startBtn">ابدأ</button>
+        <div class="zoom-bar">
+            <button id="zoomInBtn">+</button>
+            <span class="zoom-label" id="zoomLabel">١×</span>
+            <button id="zoomOutBtn">−</button>
+        </div>
+    </div>
+
+    <div id="canvasWrapper">
+        <div id="treeContainer">
+            <div class="placeholder">أدخل عدداً واضغط "ابدأ"</div>
+        </div>
+        <div id="summaryBox" class="hidden">
+            <span class="summary-label">التحليل:</span>
+            <span class="summary-arrow">←</span>
+            <span class="summary-result" id="summaryResult"></span>
+        </div>
+        <div id="errorTooltip" class="tooltip"></div>
+    </div>
+
+    <!-- لوحة الأرقام بدون أي نصوص نهائياً -->
+    <div class="numpad-overlay" id="numpadOverlay">
+        <div class="numpad-panel">
+            <div class="numpad-display" id="numpadDisplay"></div>
+            <div class="numpad-grid">
+                <button class="num-btn" data-value="1">١</button>
+                <button class="num-btn" data-value="2">٢</button>
+                <button class="num-btn" data-value="3">٣</button>
+
+                <button class="num-btn" data-value="4">٤</button>
+                <button class="num-btn" data-value="5">٥</button>
+                <button class="num-btn" data-value="6">٦</button>
+
+                <button class="num-btn" data-value="7">٧</button>
+                <button class="num-btn" data-value="8">٨</button>
+                <button class="num-btn" data-value="9">٩</button>
+
+                <button class="clear-btn" data-value="clear">⌫</button>
+                <button class="num-btn" data-value="0">٠</button>
+                <button class="done-btn" data-value="done">✔ تأكيد</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    let treeRoot = null;
+    let nodeIdCounter = 0;
+    let scale = 1;
+    let panX = 0;
+    let panY = 0;
+    let activeInputId = null;
+    let activeChildIndex = null;
+    let tempFactorValue = '';
+    let errorTimeout = null;
+    let isNumpadOpen = false;
+
+    const canvasWrapper = document.getElementById('canvasWrapper');
+    const treeContainer = document.getElementById('treeContainer');
+    const rootInput = document.getElementById('rootNumberInput');
+    const startBtn = document.getElementById('startBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const zoomInBtn = document.getElementById('zoomInBtn');
+    const zoomOutBtn = document.getElementById('zoomOutBtn');
+    const zoomLabel = document.getElementById('zoomLabel');
+    const errorTooltip = document.getElementById('errorTooltip');
+    const numpadOverlay = document.getElementById('numpadOverlay');
+    const numpadDisplay = document.getElementById('numpadDisplay');
+    const summaryBox = document.getElementById('summaryBox');
+    const summaryResult = document.getElementById('summaryResult');
+
+    const NODE_W = 54;
+    const NODE_H = 32;
+    const H_SPACE = 16;
+    const V_SPACE = 45;
+    const MARGIN = 16;
+    const MIN_SCALE = 0.3;
+    const MAX_SCALE = 2.8;
+
+    function toArabicDigits(num) {
+        const digits = '٠١٢٣٤٥٦٧٨٩';
+        return String(num).replace(/[0-9]/g, d => digits[d]);
+    }
+
+    function isPrime(n) {
+        if (n < 2) return false;
+        if (n === 2) return true;
+        if (n % 2 === 0) return false;
+        for (let i = 3; i * i <= n; i += 2) {
+            if (n % i === 0) return false;
+        }
+        return true;
+    }
+
+    function createNode(value) {
+        return {
+            id: nodeIdCounter++,
+            value: value,
+            isPrime: isPrime(value),
+            children: [],
+            isResolved: false,
+            factor1: null,
+            factor2: null
+        };
+    }
+
+    function findNodeById(node, id) {
+        if (!node) return null;
+        if (node.id === id) return node;
+        for (let child of (node.children || [])) {
+            const found = findNodeById(child, id);
+            if (found) return found;
+        }
+        return null;
+    }
+
+    function getTreeWidth(node) {
+        if (node.isPrime) return NODE_W;
+        if (node.isResolved && node.children.length === 2) {
+            return getTreeWidth(node.children[0]) + getTreeWidth(node.children[1]) + H_SPACE;
+        }
+        return 2 * NODE_W + H_SPACE;
+    }
+
+    function getTreeDepth(node) {
+        if (node.isPrime) return 1;
+        if (node.isResolved && node.children.length === 2) {
+            return 1 + Math.max(getTreeDepth(node.children[0]), getTreeDepth(node.children[1]));
+        }
+        return 2;
+    }
+
+    function collectPrimeFactors(node) {
+        if (node.isPrime) return [node.value];
+        if (!node.isResolved || !node.children || node.children.length !== 2) return null;
+        const left = collectPrimeFactors(node.children[0]);
+        const right = collectPrimeFactors(node.children[1]);
+        if (!left || !right) return null;
+        return [...left, ...right];
+    }
+
+    function getTreeDimensions(node) {
+        const w = getTreeWidth(node);
+        const d = getTreeDepth(node);
+        const svgW = Math.max(w + 2 * MARGIN, 200);
+        const levelHeight = NODE_H + V_SPACE;
+        const bottomSpace = 30;
+        const svgH = MARGIN + ((d - 1) * levelHeight) + NODE_H + bottomSpace + MARGIN;
+        return { w: svgW, h: svgH };
+    }
+
+    function updateSummary() {
+        if (!treeRoot) {
+            summaryBox.classList.add('hidden');
+            return;
+        }
+        const factors = collectPrimeFactors(treeRoot);
+        if (factors && factors.length > 0) {
+            const sorted = [...factors].sort((a, b) => a - b);
+            const resultText = `${toArabicDigits(treeRoot.value)} = ${sorted.map(toArabicDigits).join(' × ')}`;
+            summaryResult.textContent = resultText;
+            summaryBox.classList.remove('hidden');
+        } else {
+            summaryBox.classList.add('hidden');
+        }
+    }
+
+    function updateFactorDisplay(parentId, index) {
+        const svg = treeContainer.querySelector('svg');
+        if (!svg) return;
+        const texts = svg.querySelectorAll(`text[data-parent="${parentId}"][data-index="${index}"]`);
+        const node = findNodeById(treeRoot, parentId);
+        let displayText = '?';
+        if (node) {
+            if (index === 0 && node.factor1 !== null) displayText = toArabicDigits(node.factor1);
+            else if (index === 1 && node.factor2 !== null) displayText = toArabicDigits(node.factor2);
+            
+            if (activeInputId === parentId && activeChildIndex === index && tempFactorValue !== '') {
+                const val = parseInt(tempFactorValue, 10);
+                if (!isNaN(val) && val > 0) displayText = toArabicDigits(val);
+            }
+        }
+        texts.forEach(text => {
+            text.textContent = displayText;
+        });
+    }
+
+    function render() {
+        treeContainer.innerHTML = '';
+        if (!treeRoot) {
+            const p = document.createElement('div');
+            p.className = 'placeholder';
+            p.textContent = 'أدخل عدداً واضغط "ابدأ"';
+            treeContainer.appendChild(p);
+            updateSummary();
+            return;
+        }
+
+        const containerW = canvasWrapper.clientWidth || 400;
+        const containerH = canvasWrapper.clientHeight - 50 || 300;
+        const dim = getTreeDimensions(treeRoot);
+        let svgW = Math.max(dim.w, containerW * 0.85);
+        let svgH = Math.max(dim.h, containerH * 0.85);
+
+        const effectiveScale = scale;
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', `0 0 ${svgW} ${svgH}`);
+        svg.setAttribute('width', svgW);
+        svg.setAttribute('height', svgH);
+        svg.style.width = svgW + 'px';
+        svg.style.height = svgH + 'px';
+        svg.style.transform = `translate(${panX}px, ${panY}px) scale(${effectiveScale})`;
+        svg.style.transformOrigin = '0 0';
+        svg.style.touchAction = 'none';
+        svg.style.position = 'absolute';
+        svg.style.top = '0';
+        svg.style.left = '0';
+
+        drawNode(svg, treeRoot, svgW / 2, MARGIN);
+
+        treeContainer.appendChild(svg);
+        zoomLabel.textContent = Math.round(effectiveScale * 100) + '%';
+        updateSummary();
+    }
+
+    function drawNode(svg, node, x, y) {
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', x - NODE_W / 2);
+        rect.setAttribute('y', y);
+        rect.setAttribute('width', NODE_W);
+        rect.setAttribute('height', NODE_H);
+        rect.setAttribute('rx', 6);
+        let fill = node.isPrime ? '#10b981' : (node.isResolved ? '#3b82f6' : '#fbbf24');
+        rect.setAttribute('fill', fill);
+        rect.setAttribute('stroke', '#1e293b');
+        rect.setAttribute('stroke-width', 2);
+        svg.appendChild(rect);
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', x);
+        text.setAttribute('y', y + NODE_H / 2 + 5);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('fill', '#ffffff');
+        text.setAttribute('font-size', '15');
+        text.setAttribute('font-weight', 'bold');
+        text.setAttribute('font-family', 'Cairo, sans-serif');
+        text.textContent = toArabicDigits(node.value);
+        svg.appendChild(text);
+
+        if (node.isPrime) {
+            const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            label.setAttribute('x', x);
+            label.setAttribute('y', y + NODE_H + 16);
+            label.setAttribute('text-anchor', 'middle');
+            label.setAttribute('fill', '#b91c1c');
+            label.setAttribute('font-size', '10');
+            label.setAttribute('font-weight', 'bold');
+            label.setAttribute('font-family', 'Cairo, sans-serif');
+            label.textContent = '✅ أولي';
+            svg.appendChild(label);
+            return;
+        }
+
+        const childY = y + NODE_H + V_SPACE;
+
+        if (node.isResolved && node.children.length === 2) {
+            const left = node.children[0];
+            const right = node.children[1];
+            const lw = getTreeWidth(left);
+            const rw = getTreeWidth(right);
+            const total = lw + rw + H_SPACE;
+            const lx = x - total / 2 + lw / 2;
+            const rx = x + total / 2 - rw / 2;
+
+            drawLine(svg, x, y + NODE_H, lx, childY);
+            drawLine(svg, x, y + NODE_H, rx, childY);
+            drawMultiply(svg, x, childY + NODE_H / 2);
+
+            drawNode(svg, left, lx, childY);
+            drawNode(svg, right, rx, childY);
+        } else {
+            const gap = H_SPACE;
+            const leftX = x - (NODE_W + gap) / 2;
+            const rightX = x + (NODE_W + gap) / 2;
+
+            drawLine(svg, x, y + NODE_H, leftX, childY);
+            drawLine(svg, x, y + NODE_H, rightX, childY);
+            drawMultiply(svg, x, childY + NODE_H / 2);
+
+            drawInputBox(svg, leftX, childY, node.id, 0);
+            drawInputBox(svg, rightX, childY, node.id, 1);
+        }
+    }
+
+    function drawLine(svg, x1, y1, x2, y2) {
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', x1);
+        line.setAttribute('y1', y1);
+        line.setAttribute('x2', x2);
+        line.setAttribute('y2', y2);
+        line.setAttribute('stroke', '#475569');
+        line.setAttribute('stroke-width', 2);
+        svg.appendChild(line);
+    }
+
+    function drawMultiply(svg, x, y) {
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', x);
+        text.setAttribute('y', y + 5);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('fill', '#0f172a');
+        text.setAttribute('font-size', '18');
+        text.setAttribute('font-weight', 'bold');
+        text.setAttribute('font-family', 'Cairo, sans-serif');
+        text.textContent = '×';
+        svg.appendChild(text);
+    }
+
+    function drawInputBox(svg, x, y, parentId, index) {
+        const node = findNodeById(treeRoot, parentId);
+        const isActive = (activeInputId === parentId && activeChildIndex === index);
+
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', x - NODE_W / 2);
+        rect.setAttribute('y', y);
+        rect.setAttribute('width', NODE_W);
+        rect.setAttribute('height', NODE_H);
+        rect.setAttribute('rx', 6);
+        rect.setAttribute('fill', isActive ? '#dbeafe' : '#f1f5f9');
+        rect.setAttribute('stroke', isActive ? '#3b82f6' : '#94a3b8');
+        rect.setAttribute('stroke-width', isActive ? 2.5 : 2);
+        if (!isActive) rect.setAttribute('stroke-dasharray', '4,4');
+        rect.setAttribute('data-parent', parentId);
+        rect.setAttribute('data-index', index);
+        rect.classList.add('clickable');
+        svg.appendChild(rect);
+
+        let displayText = '?';
+        if (node) {
+            if (index === 0 && node.factor1 !== null) displayText = toArabicDigits(node.factor1);
+            else if (index === 1 && node.factor2 !== null) displayText = toArabicDigits(node.factor2);
+            
+            if (isActive && tempFactorValue !== '') {
+                const val = parseInt(tempFactorValue, 10);
+                if (!isNaN(val) && val > 0) displayText = toArabicDigits(val);
+            }
+        }
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', x);
+        text.setAttribute('y', y + NODE_H / 2 + 5);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('fill', isActive ? '#1d4ed8' : '#0f172a');
+        text.setAttribute('font-size', '15');
+        text.setAttribute('font-weight', '700');
+        text.setAttribute('font-family', 'Cairo, sans-serif');
+        text.textContent = displayText;
+        text.classList.add('clickable');
+        text.setAttribute('data-parent', parentId);
+        text.setAttribute('data-index', index);
+        svg.appendChild(text);
+
+        const hit = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        hit.setAttribute('x', x - NODE_W / 2 - 4);
+        hit.setAttribute('y', y - 4);
+        hit.setAttribute('width', NODE_W + 8);
+        hit.setAttribute('height', NODE_H + 8);
+        hit.setAttribute('fill', 'transparent');
+        hit.setAttribute('stroke', 'none');
+        hit.setAttribute('data-parent', parentId);
+        hit.setAttribute('data-index', index);
+        hit.classList.add('clickable');
+        
+        hit.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const pid = parseInt(hit.getAttribute('data-parent'), 10);
+            const idx = parseInt(hit.getAttribute('data-index'), 10);
+            handleBoxSwitch(pid, idx);
+        });
+        hit.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const pid = parseInt(hit.getAttribute('data-parent'), 10);
+            const idx = parseInt(hit.getAttribute('data-index'), 10);
+            handleBoxSwitch(pid, idx);
+        });
+        svg.appendChild(hit);
+    }
+
+    function handleBoxSwitch(parentId, index) {
+        if (activeInputId !== null && (activeInputId !== parentId || activeChildIndex !== index)) {
+            confirmFactor(); 
+        }
+        openNumpad(parentId, index);
+    }
+
+    function openNumpad(parentId, index) {
+        const node = findNodeById(treeRoot, parentId);
+        if (!node || node.isResolved || node.isPrime) return;
+
+        activeInputId = parentId;
+        activeChildIndex = index;
+        const currentVal = index === 0 ? node.factor1 : node.factor2;
+        if (currentVal !== null && currentVal !== undefined) {
+            tempFactorValue = String(currentVal);
+            numpadDisplay.textContent = toArabicDigits(currentVal);
+        } else {
+            tempFactorValue = '';
+            numpadDisplay.textContent = '';
+        }
+        isNumpadOpen = true;
+        numpadOverlay.classList.add('active');
+        render();
+    }
+
+    function closeNumpad() {
+        numpadOverlay.classList.remove('active');
+        isNumpadOpen = false;
+        activeInputId = null;
+        activeChildIndex = null;
+        render();
+    }
+
+    function handleOutsideTap(e) {
+        if (!isNumpadOpen) return;
+        if (e.target.closest('.numpad-panel') || e.target.closest('.clickable') || 
+            e.target.closest('input') || e.target.closest('button')) {
+            return;
+        }
+        confirmFactor();
+    }
+
+    document.addEventListener('click', handleOutsideTap);
+    document.addEventListener('touchend', (e) => {
+        if (e.target.closest('.numpad-panel')) return;
+        handleOutsideTap(e);
+    });
+
+    function handleNumpadInput(value) {
+        if (value === 'clear') {
+            tempFactorValue = tempFactorValue.slice(0, -1);
+        } else if (value === 'done') {
+            confirmFactor();
+            return;
+        } else {
+            if (tempFactorValue.length < 4) {
+                tempFactorValue += value;
+            }
+        }
+        
+        if (tempFactorValue === '') {
+            numpadDisplay.textContent = '';
+        } else {
+            numpadDisplay.textContent = toArabicDigits(parseInt(tempFactorValue, 10) || 0);
+        }
+
+        if (activeInputId !== null && activeChildIndex !== null) {
+            const node = findNodeById(treeRoot, activeInputId);
+            if (node) {
+                if (activeChildIndex === 0) node.factor1 = tempFactorValue !== '' ? parseInt(tempFactorValue, 10) : null;
+                else node.factor2 = tempFactorValue !== '' ? parseInt(tempFactorValue, 10) : null;
+            }
+            updateFactorDisplay(activeInputId, activeChildIndex);
+        }
+    }
+
+    function confirmFactor() {
+        if (activeInputId === null || activeChildIndex === null) {
+            closeNumpad();
+            return;
+        }
+        const val = parseInt(tempFactorValue, 10);
+        if (isNaN(val) || val < 2) {
+            if (tempFactorValue !== '') {
+                showError('أدخل عدداً صحيحاً أكبر من 1');
+            }
+            closeNumpad();
+            return;
+        }
+
+        const node = findNodeById(treeRoot, activeInputId);
+        if (!node || node.isResolved) {
+            closeNumpad();
+            return;
+        }
+
+        if (activeChildIndex === 0) node.factor1 = val;
+        else node.factor2 = val;
+
+        if (node.factor1 !== null && node.factor2 !== null) {
+            const f1 = node.factor1;
+            const f2 = node.factor2;
+            if (f1 * f2 !== node.value) {
+                showError(`حاصل الضرب = ${toArabicDigits(node.value)}`);
+                node.factor1 = null;
+                node.factor2 = null;
+                tempFactorValue = '';
+                closeNumpad();
+                return;
+            }
+            node.isResolved = true;
+            node.children = [createNode(f1), createNode(f2)];
+            node.factor1 = null;
+            node.factor2 = null;
+        }
+        
+        closeNumpad();
+        render();
+    }
+
+    function showError(msg) {
+        errorTooltip.textContent = '❌ ' + msg;
+        errorTooltip.classList.add('show');
+        clearTimeout(errorTimeout);
+        errorTimeout = setTimeout(() => {
+            errorTooltip.classList.remove('show');
+        }, 1500);
+    }
+
+    function startNew() {
+        const raw = rootInput.value.trim();
+        const num = parseInt(raw, 10);
+        if (isNaN(num) || num < 2) {
+            showError('أدخل عدداً أكبر من 1');
+            return;
+        }
+        nodeIdCounter = 0;
+        treeRoot = createNode(num);
+        scale = 1;
+        panX = 0;
+        panY = 0;
+        render();
+    }
+
+    function resetAll() {
+        treeRoot = null;
+        nodeIdCounter = 0;
+        rootInput.value = '';
+        scale = 1;
+        panX = 0;
+        panY = 0;
+        render();
+        closeNumpad();
+        errorTooltip.classList.remove('show');
+    }
+
+    function zoomIn() {
+        scale = Math.min(scale * 1.2, MAX_SCALE);
+        render();
+    }
+
+    function zoomOut() {
+        scale = Math.max(scale / 1.2, MIN_SCALE);
+        render();
+    }
+
+    let isPanning = false;
+    let startPanX = 0;
+    let startPanY = 0;
+    let startPanOffsetX = 0;
+    let startPanOffsetY = 0;
+    let pointerId = null;
+
+    canvasWrapper.addEventListener('pointerdown', (e) => {
+        if (e.target.closest('.clickable') || e.target.closest('input') || e.target.closest('button')) {
+            return;
+        }
+        isPanning = true;
+        pointerId = e.pointerId;
+        startPanX = e.clientX;
+        startPanY = e.clientY;
+        startPanOffsetX = panX;
+        startPanOffsetY = panY;
+        canvasWrapper.classList.add('panning');
+        canvasWrapper.setPointerCapture(e.pointerId);
+        e.preventDefault();
+    });
+
+    canvasWrapper.addEventListener('pointermove', (e) => {
+        if (!isPanning || e.pointerId !== pointerId) return;
+        const dx = e.clientX - startPanX;
+        const dy = e.clientY - startPanY;
+        panX = startPanOffsetX + dx;
+        panY = startPanOffsetY + dy;
+        render();
+        e.preventDefault();
+    });
+
+    canvasWrapper.addEventListener('pointerup', (e) => {
+        if (e.pointerId !== pointerId) return;
+        isPanning = false;
+        pointerId = null;
+        canvasWrapper.classList.remove('panning');
+        if (canvasWrapper.hasPointerCapture(e.pointerId)) {
+            canvasWrapper.releasePointerCapture(e.pointerId);
+        }
+    });
+
+    canvasWrapper.addEventListener('pointercancel', (e) => {
+        if (e.pointerId !== pointerId) return;
+        isPanning = false;
+        pointerId = null;
+        canvasWrapper.classList.remove('panning');
+    });
+
+    let lastPinchDist = 0;
+    let pinchScale = 1;
+
+    function getPinchDist(e) {
+        if (e.touches.length < 2) return 0;
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        return Math.sqrt(dx*dx + dy*dy);
+    }
+
+    canvasWrapper.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 2) {
+            lastPinchDist = getPinchDist(e);
+            pinchScale = scale;
+        }
+    }, { passive: true });
+
+    canvasWrapper.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 2) {
+            e.preventDefault();
+            const dist = getPinchDist(e);
+            if (dist > 0 && lastPinchDist > 0) {
+                const delta = dist / lastPinchDist;
+                let newScale = pinchScale * delta;
+                newScale = Math.min(Math.max(newScale, MIN_SCALE), MAX_SCALE);
+                scale = newScale;
+                render();
+            }
+        }
+    }, { passive: false });
+
+    canvasWrapper.addEventListener('touchend', (e) => {
+        lastPinchDist = 0;
+    }, { passive: true });
+
+    startBtn.addEventListener('click', startNew);
+    resetBtn.addEventListener('click', resetAll);
+    zoomInBtn.addEventListener('click', zoomIn);
+    zoomOutBtn.addEventListener('click', zoomOut);
+
+    rootInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') startNew();
+    });
+
+    document.querySelectorAll('.numpad-grid button[data-value]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleNumpadInput(btn.getAttribute('data-value'));
+        });
+        btn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleNumpadInput(btn.getAttribute('data-value'));
+        });
+    });
+
+    numpadOverlay.addEventListener('click', (e) => {
+        if (e.target === numpadOverlay) {
+            confirmFactor();
+        }
+    });
+
+    numpadOverlay.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => { if (treeRoot) render(); }, 200);
+    });
+
+    render();
+})();
+</script>
+</body>
+</html>
