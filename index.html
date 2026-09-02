@@ -546,7 +546,7 @@
 
             drawLine(svg, x, y + NODE_H, lx, childY);
             drawLine(svg, x, y + NODE_H, rx, childY);
-            drawMultiply(svg, x, childY + NODE_H / 2);
+            drawMultiply(svg, (lx + rx) / 2, childY + NODE_H / 2);
 
             drawNode(svg, left, lx, childY);
             drawNode(svg, right, rx, childY);
@@ -557,7 +557,7 @@
 
             drawLine(svg, x, y + NODE_H, leftX, childY);
             drawLine(svg, x, y + NODE_H, rightX, childY);
-            drawMultiply(svg, x, childY + NODE_H / 2);
+            drawMultiply(svg, (leftX + rightX) / 2, childY + NODE_H / 2);
 
             drawInputBox(svg, leftX, childY, node.id, 0);
             drawInputBox(svg, rightX, childY, node.id, 1);
