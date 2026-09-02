@@ -200,96 +200,77 @@
         .zoom-bar button:active { background: #cbd5e1; transform: scale(0.92); }
         .zoom-label { font-size: 11px; color: #64748b; min-width: 32px; text-align: center; font-weight: 700; }
 
-        /* لوحة الأرقام خالية تماماً من أي نصوص مزعجة وتعمل بسلاسة */
+        /* لوحة أرقام مصغرة، أفقية وأنيقة جداً أسفل الشاشة */
         .numpad-overlay {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(0,0,0,0.1);
-            backdrop-filter: blur(2px);
+            background: rgba(0,0,0,0.05);
+            backdrop-filter: blur(1px);
             display: none;
             justify-content: center;
             align-items: flex-end;
-            padding: 4px 4px 12px 4px;
+            padding: 2px 4px 8px 4px;
             z-index: 100;
             animation: fadeUp 0.15s ease;
         }
         .numpad-overlay.active { display: flex; }
         .numpad-panel {
-            background: rgba(243, 244, 246, 0.98);
+            background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 6px;
+            border-radius: 12px;
+            padding: 4px;
             width: 100%;
-            max-width: 270px;
-            box-shadow: 0 -10px 25px rgba(0,0,0,0.1);
+            max-width: 320px;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
-            gap: 4px;
-            border: 1px solid rgba(255,255,255,0.4);
-        }
-        .numpad-display {
-            background: #ffffff;
-            border-radius: 6px;
-            padding: 4px 6px;
-            font-size: 16px;
-            font-weight: 900;
-            text-align: center;
-            color: #0f172a;
+            gap: 3px;
             border: 1px solid #cbd5e1;
-            min-height: 30px;
-            font-family: 'Cairo', sans-serif;
-            direction: rtl;
         }
         .numpad-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 4px;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 3px;
         }
         .numpad-grid button {
-            padding: 6px 0;
-            font-size: 17px;
+            padding: 4px 0;
+            font-size: 14px;
             font-weight: 700;
             border: none;
-            border-radius: 6px;
-            background: #ffffff;
+            border-radius: 5px;
+            background: #f1f5f9;
             color: #0f172a;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 1px rgba(0,0,0,0.04);
             touch-action: manipulation;
             cursor: pointer;
             transition: all 0.05s ease;
             font-family: 'Cairo', sans-serif;
-            min-height: 36px;
-            border: 1px solid rgba(226,232,240,0.8);
+            min-height: 30px;
             display: flex;
             align-items: center;
             justify-content: center;
+            border: 1px solid #e2e8f0;
         }
         .numpad-grid button:active {
             background: #cbd5e1;
-            transform: scale(0.94);
-        }
-        .numpad-grid .num-btn {
-            background: #ffffff;
-            color: #0f172a;
+            transform: scale(0.93);
         }
         .numpad-grid .clear-btn {
             background: #fee2e2;
             color: #dc2626;
             border-color: #fecaca;
-            font-size: 15px;
         }
         .numpad-grid .done-btn {
             background: #3b82f6;
             color: white;
             border: none;
-            font-size: 14px;
             font-weight: 800;
         }
 
         @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(20px); }
+            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -349,26 +330,23 @@
         <div id="errorTooltip" class="tooltip"></div>
     </div>
 
-    <!-- لوحة الأرقام بدون أي نصوص نهائياً -->
+    <!-- لوحة الأرقام المصغرة والأفقية مع جعل زر التأكيد صغيراً تحت زر الحذف -->
     <div class="numpad-overlay" id="numpadOverlay">
         <div class="numpad-panel">
-            <div class="numpad-display" id="numpadDisplay"></div>
             <div class="numpad-grid">
                 <button class="num-btn" data-value="1">١</button>
                 <button class="num-btn" data-value="2">٢</button>
                 <button class="num-btn" data-value="3">٣</button>
-
                 <button class="num-btn" data-value="4">٤</button>
                 <button class="num-btn" data-value="5">٥</button>
-                <button class="num-btn" data-value="6">٦</button>
+                <button class="clear-btn" data-value="clear">⌫</button>
 
+                <button class="num-btn" data-value="6">٦</button>
                 <button class="num-btn" data-value="7">٧</button>
                 <button class="num-btn" data-value="8">٨</button>
                 <button class="num-btn" data-value="9">٩</button>
-
-                <button class="clear-btn" data-value="clear">⌫</button>
                 <button class="num-btn" data-value="0">٠</button>
-                <button class="done-btn" data-value="done">✔ تأكيد</button>
+                <button class="done-btn" data-value="done">✔</button>
             </div>
         </div>
     </div>
@@ -397,7 +375,6 @@
     const zoomLabel = document.getElementById('zoomLabel');
     const errorTooltip = document.getElementById('errorTooltip');
     const numpadOverlay = document.getElementById('numpadOverlay');
-    const numpadDisplay = document.getElementById('numpadDisplay');
     const summaryBox = document.getElementById('summaryBox');
     const summaryResult = document.getElementById('summaryResult');
 
@@ -735,10 +712,8 @@
         const currentVal = index === 0 ? node.factor1 : node.factor2;
         if (currentVal !== null && currentVal !== undefined) {
             tempFactorValue = String(currentVal);
-            numpadDisplay.textContent = toArabicDigits(currentVal);
         } else {
             tempFactorValue = '';
-            numpadDisplay.textContent = '';
         }
         isNumpadOpen = true;
         numpadOverlay.classList.add('active');
@@ -778,12 +753,6 @@
             if (tempFactorValue.length < 4) {
                 tempFactorValue += value;
             }
-        }
-        
-        if (tempFactorValue === '') {
-            numpadDisplay.textContent = '';
-        } else {
-            numpadDisplay.textContent = toArabicDigits(parseInt(tempFactorValue, 10) || 0);
         }
 
         if (activeInputId !== null && activeChildIndex !== null) {
