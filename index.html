@@ -29,74 +29,71 @@
             max-width: 500px;
             margin: 0 auto;
             background: #ffffff;
-            padding: 6px 8px 8px;
+            padding: 6px;
             position: relative;
         }
-        .header {
+        /* إطار علوي موحد يجمع العنوان وأدوات الإدخال والتحكم */
+        .top-bar {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 4px 8px;
+            gap: 6px;
             flex-shrink: 0;
-            padding-bottom: 4px;
-            border-bottom: 1px solid #e2e8f0;
-            flex-wrap: wrap;
+        }
+        .top-bar .app-title {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 14px;
+            font-weight: 800;
+            color: #1e293b;
+            white-space: nowrap;
+        }
+        .top-bar .app-title span {
+            font-size: 10px;
+            color: #64748b;
+            font-weight: 400;
+        }
+        .top-bar-inputs {
+            display: flex;
+            align-items: center;
             gap: 4px;
         }
-        .header h1 { font-size: 16px; color: #1e293b; }
-        .header .sub { color: #64748b; font-size: 11px; }
-        .controls { display: flex; gap: 4px; align-items: center; }
-        .controls button {
-            padding: 4px 10px;
-            font-size: 12px;
-            font-weight: 700;
-            border: none;
-            border-radius: 6px;
-            background: #3b82f6;
-            color: white;
-            cursor: pointer;
-            touch-action: manipulation;
-        }
-        .controls button:active { transform: scale(0.92); }
-        .controls .btn-reset { background: #94a3b8; }
-
-        .input-row {
-            display: flex;
-            gap: 6px;
-            align-items: center;
-            padding: 4px 0;
-            flex-shrink: 0;
-            flex-wrap: wrap;
-        }
-        .input-row input {
-            width: 70px;
-            padding: 6px 4px;
-            font-size: 16px;
+        .top-bar input {
+            width: 55px;
+            padding: 3px 2px;
+            font-size: 14px;
             font-weight: 700;
             text-align: center;
             border: 2px solid #cbd5e1;
-            border-radius: 10px;
+            border-radius: 7px;
             outline: none;
             background: white;
             font-family: 'Cairo', sans-serif;
         }
-        .input-row input:focus { border-color: #3b82f6; }
-        .input-row button {
-            padding: 6px 12px;
-            background: #3b82f6;
-            border: none;
-            border-radius: 10px;
-            color: white;
-            font-size: 15px;
+        .top-bar input:focus { border-color: #3b82f6; }
+        .top-bar button {
+            padding: 4px 10px;
+            font-size: 12px;
             font-weight: 800;
+            border: none;
+            border-radius: 7px;
             cursor: pointer;
             touch-action: manipulation;
         }
-        .input-row button:active { background: #2563eb; }
+        .top-bar button:active { transform: scale(0.92); }
+        .btn-start { background: #3b82f6; color: white; }
+        .btn-start:active { background: #2563eb; }
+        .btn-reset { background: #94a3b8; color: white; }
 
         #canvasWrapper {
             flex: 1;
             min-height: 0;
-            margin-top: 4px;
+            margin-top: 6px;
             border-radius: 12px;
             background: #fafcff;
             background-image: linear-gradient(#e8eef7 1px, transparent 1px),
@@ -135,7 +132,7 @@
         }
         .placeholder {
             color: #94a3b8;
-            font-size: 15px;
+            font-size: 14px;
             text-align: center;
             padding: 30px 10px;
             position: absolute;
@@ -146,18 +143,18 @@
 
         #summaryBox {
             flex-shrink: 0;
-            margin: 6px 10px 4px 10px;
-            padding: 6px 12px;
+            margin: 4px 8px 2px 8px;
+            padding: 4px 10px;
             border: 2px solid #10b981;
-            border-radius: 10px;
+            border-radius: 8px;
             background: rgba(236, 253, 245, 0.85);
             backdrop-filter: blur(4px);
             text-align: center;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 800;
             color: #065f46;
             direction: rtl;
-            min-height: 38px;
+            min-height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -169,36 +166,14 @@
             opacity: 0;
             transform: scale(0.95);
             min-height: 0;
-            padding: 0 12px;
+            padding: 0 10px;
             border-color: transparent;
             background: transparent;
             box-shadow: none;
         }
-        #summaryBox .summary-label { color: #047857; font-size: 14px; }
-        #summaryBox .summary-result { color: #0f172a; font-size: 18px; }
-        #summaryBox .summary-arrow { color: #94a3b8; font-size: 18px; }
-
-        .zoom-bar {
-            display: flex;
-            gap: 4px;
-            align-items: center;
-            flex-shrink: 0;
-            padding: 2px 0;
-        }
-        .zoom-bar button {
-            width: 28px;
-            height: 28px;
-            border-radius: 6px;
-            border: none;
-            background: #e2e8f0;
-            font-size: 16px;
-            font-weight: 800;
-            color: #1e293b;
-            cursor: pointer;
-            touch-action: manipulation;
-        }
-        .zoom-bar button:active { background: #cbd5e1; transform: scale(0.92); }
-        .zoom-label { font-size: 11px; color: #64748b; min-width: 32px; text-align: center; font-weight: 700; }
+        #summaryBox .summary-label { color: #047857; font-size: 13px; }
+        #summaryBox .summary-result { color: #0f172a; font-size: 16px; }
+        #summaryBox .summary-arrow { color: #94a3b8; font-size: 16px; }
 
         /* لوحة أرقام مصغرة، أفقية وأنيقة جداً أسفل الشاشة */
         .numpad-overlay {
@@ -211,7 +186,7 @@
             display: none;
             justify-content: center;
             align-items: flex-end;
-            padding: 2px 4px 8px 4px;
+            padding: 2px 4px 6px 4px;
             z-index: 100;
             animation: fadeUp 0.15s ease;
         }
@@ -298,23 +273,15 @@
 </head>
 <body>
 <div class="app">
-    <div class="header">
-        <div style="display:flex; align-items:center; gap:4px;">
-            <h1>🌳 تحليل شجري</h1>
-            <span class="sub">(جوال)</span>
+    <!-- إطار علوي مدمج واحد -->
+    <div class="top-bar">
+        <div class="app-title">
+            🌳 تحليل شجري <span>(جوال)</span>
         </div>
-        <div class="controls">
+        <div class="top-bar-inputs">
+            <input type="number" id="rootNumberInput" placeholder="العدد" min="2" step="1" inputmode="numeric">
+            <button class="btn-start" id="startBtn">ابدأ</button>
             <button class="btn-reset" id="resetBtn">↻ إعادة</button>
-        </div>
-    </div>
-
-    <div class="input-row">
-        <input type="number" id="rootNumberInput" placeholder="العدد" min="2" step="1" inputmode="numeric">
-        <button id="startBtn">ابدأ</button>
-        <div class="zoom-bar">
-            <button id="zoomInBtn">+</button>
-            <span class="zoom-label" id="zoomLabel">١×</span>
-            <button id="zoomOutBtn">−</button>
         </div>
     </div>
 
@@ -330,7 +297,7 @@
         <div id="errorTooltip" class="tooltip"></div>
     </div>
 
-    <!-- لوحة الأرقام المصغرة والأفقية مع جعل زر التأكيد صغيراً تحت زر الحذف -->
+    <!-- لوحة الأرقام المصغرة والأفقية -->
     <div class="numpad-overlay" id="numpadOverlay">
         <div class="numpad-panel">
             <div class="numpad-grid">
@@ -370,9 +337,6 @@
     const rootInput = document.getElementById('rootNumberInput');
     const startBtn = document.getElementById('startBtn');
     const resetBtn = document.getElementById('resetBtn');
-    const zoomInBtn = document.getElementById('zoomInBtn');
-    const zoomOutBtn = document.getElementById('zoomOutBtn');
-    const zoomLabel = document.getElementById('zoomLabel');
     const errorTooltip = document.getElementById('errorTooltip');
     const numpadOverlay = document.getElementById('numpadOverlay');
     const summaryBox = document.getElementById('summaryBox');
@@ -528,7 +492,6 @@
         drawNode(svg, treeRoot, svgW / 2, MARGIN);
 
         treeContainer.appendChild(svg);
-        zoomLabel.textContent = Math.round(effectiveScale * 100) + '%';
         updateSummary();
     }
 
@@ -845,16 +808,6 @@
         errorTooltip.classList.remove('show');
     }
 
-    function zoomIn() {
-        scale = Math.min(scale * 1.2, MAX_SCALE);
-        render();
-    }
-
-    function zoomOut() {
-        scale = Math.max(scale / 1.2, MIN_SCALE);
-        render();
-    }
-
     let isPanning = false;
     let startPanX = 0;
     let startPanY = 0;
@@ -941,8 +894,6 @@
 
     startBtn.addEventListener('click', startNew);
     resetBtn.addEventListener('click', resetAll);
-    zoomInBtn.addEventListener('click', zoomIn);
-    zoomOutBtn.addEventListener('click', zoomOut);
 
     rootInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') startNew();
